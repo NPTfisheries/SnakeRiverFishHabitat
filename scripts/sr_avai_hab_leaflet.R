@@ -16,8 +16,8 @@ library(tidyverse)
 library(here)
 library(sf)
 library(leaflet)
+library(htmlwidgets)
 #library(readxl)
-#library(htmlwidgets)
 
 # -----------------------
 # compile data
@@ -108,5 +108,9 @@ sr_hab_leaflet = base %>%
                    options = layersControlOptions(collapsed = FALSE))
 
 sr_hab_leaflet
-  
+
+# save leaflet
+saveWidget(sr_hab_leaflet, file = here("shiny/leaflet/sr_available_habitat_leaflet.html"))
+
+### END SCRIPT  
   
