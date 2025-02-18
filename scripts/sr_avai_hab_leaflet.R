@@ -38,6 +38,36 @@ chnk_spawn = readRDS(here("data/spatial/spsm_spwn_areas.rds")) %>%
 load(file = here("data/spatial/prepped_snake_ip.rda"))
 qrf_sf = get(load(file = here("data/spatial/snake_redd_qrf.rda")))
 
+# prep sthd ip
+sthd_ip_sf = ip_sf %>%
+  # filter to steelhead spatial extent
+  mutate(currsthd = if_else(currsthd > 0, TRUE, FALSE)) %>%
+  filter(currsthd == TRUE) %>%
+  # one more filter to remove stream reaches with ip of "none"
+  filter(!sthdrate == 0) %>%
+  mutate(ip_class = case_when(
+    sthdrate == 3 ~ "High",
+    sthdrate == 2 ~ "Med",
+    sthdrate == 1 ~ "Low",
+    TRUE ~ NA_character_
+  )) %>%
+  select(ip_class)
+
+# prep chnk ip
+chnk_ip_sf = ip_sf %>%
+  # filter to steelhead spatial extent
+  mutate(currchnk = if_else(currchnk > 0, TRUE, FALSE)) %>%
+  filter(currchnk == TRUE) %>%
+  # one more filter to remove stream reaches with ip of "none"
+  filter(!chinrate == 0) %>%
+  mutate(ip_class = case_when(
+    chinrate == 3 ~ "High",
+    chinrate == 2 ~ "Med",
+    chinrate == 1 ~ "Low",
+    TRUE ~ NA_character_
+  )) %>%
+  select(ip_class)
+
 # -----------------------
 # set some colors
 sthd_mpg_col = colorFactor(palette = "Dark2", domain = sthd_pops$MPG)
