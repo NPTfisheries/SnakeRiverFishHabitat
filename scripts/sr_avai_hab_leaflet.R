@@ -3,7 +3,7 @@
 #   along with TRT population boundaries.
 # 
 # Created: February 14, 2025
-#   Last Modified:
+#   Last Modified: February 19, 2025
 # 
 # Notes:
 #
@@ -17,26 +17,32 @@ library(here)
 library(sf)
 library(leaflet)
 library(htmlwidgets)
-#library(readxl)
+library(magrittr)
+
+# set default crs
+default_crs = st_crs(4326)
 
 # -----------------------
 # compile data
 # populations
 load(here("data/spatial/SR_pops.rda")) ; rm(fall_pop)
 sthd_pops = sth_pop %>%
-  select(TRT_POPID, POP_NAME, MPG) ; rm(sth_pop)
+  select(TRT_POPID, POP_NAME, MPG) %>%
+  st_transform(default_crs); rm(sth_pop)
 chnk_pops = spsm_pop %>%
-  select(TRT_POPID, POP_NAME, MPG) ; rm(spsm_pop)
+  select(TRT_POPID, POP_NAME, MPG) %>%
+  st_transform(default_crs); rm(spsm_pop)
 
 # major/minor spawning areas
 sthd_spawn = load(here("data/spatial/steelhead_gis_data.rda")) %>%
-  {sthd_spawn %>% st_transform("EPSG:4326")} ; rm(sthd_critical, sthd_extant, sthd_ip, sthd_huc)
+  {sthd_spawn %>% st_transform(default_crs)} ; rm(sthd_critical, sthd_extant, sthd_ip, sthd_huc)
 chnk_spawn = readRDS(here("data/spatial/spsm_spwn_areas.rds")) %>%
-  st_transform("EPSG:4326")
+  st_transform(default_crs)
 
 # prepped intrinsic potential and redd qrf datasets
 load(file = here("data/spatial/prepped_snake_ip.rda"))
-qrf_sf = get(load(file = here("data/spatial/snake_redd_qrf.rda")))
+ip_sf %<>% st_transform(default_crs)
+qrf_sf = get(load(file = here("data/spatial/snake_redd_qrf.rda"))) %>% st_transform(default_crs)
 
 # prep sthd ip
 sthd_ip_sf = ip_sf %>%
@@ -51,6 +57,7 @@ sthd_ip_sf = ip_sf %>%
     sthdrate == 1 ~ "Low",
     TRUE ~ NA_character_
   )) %>%
+  mutate(ip_class = factor(ip_class, levels = c("High", "Med", "Low"))) %>%
   select(ip_class)
 
 # prep chnk ip
@@ -66,6 +73,7 @@ chnk_ip_sf = ip_sf %>%
     chinrate == 1 ~ "Low",
     TRUE ~ NA_character_
   )) %>%
+  mutate(ip_class = factor(ip_class, levels = c("High", "Med", "Low"))) %>%
   select(ip_class)
 
 # -----------------------
@@ -74,6 +82,9 @@ sthd_mpg_col = colorFactor(palette = "Dark2", domain = sthd_pops$MPG)
 sthd_spawn_col = colorFactor(palette = c("skyblue", "navy"), domain = sthd_spawn$TYPE, reverse = TRUE)
 chnk_mpg_col = colorFactor(palette = "Set1", domain = chnk_pops$MPG)
 chnk_spawn_col = colorFactor(palette = c("springgreen", "darkgreen"), domain = chnk_spawn$TYPE, reverse = TRUE)
+ip_col = colorFactor(palette = c("#E3F2FD", "#64B5F6", "#0D47A1"), 
+                     domain = sthd_ip_sf$ip_class,
+                     levels = c("Low", "Med", "High"))
 
 # -----------------------
 # build leaflet
@@ -131,11 +142,34 @@ sr_hab_leaflet = base %>%
               color = "black",
               opacity = 1,
               label = ~paste0(POP_NAME, ": ", MSA_NAME, ", ", TYPE)) %>%
+  # steelhead intrinsic potential
+  addPolylines(data = sthd_ip_sf,
+               group = "Steelhead IP",
+               color = ~ip_col(ip_class),
+               weight = 2,
+               opacity = 1,
+               label = ~paste0("IP Class: ", ip_class)) %>%
+  # chinook intrinsic potential
+  addPolylines(data = chnk_ip_sf,
+               group = "Sp/Sum Chinook IP",
+               color = ~ip_col(ip_class),
+               weight = 2,
+               opacity = 1,
+               label = ~paste0("IP Class: ", ip_class)) %>%
+  # intrinsic potential legend
+  addLegend(position = "bottomleft",
+            pal = ip_col,
+            values = factor(c("High", "Med", "Low"), levels = c("High", "Med", "Low")),
+            title = "Intrinsic Potential",
+            opacity = 1) %>%
   addLayersControl(baseGroups = c("Steelhead Populations",
                                   "Steelhead Spawning Areas",
                                   "Sp/Sum Chinook Populations",
                                   "Sp/Sum Chinook Spawning Areas"),
-                   options = layersControlOptions(collapsed = FALSE))
+                   overlayGroups = c("Steelhead IP",
+                                     "Sp/Sum Chinook IP"),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  hideGroup("Sp/Sum Chinook IP")
 
 sr_hab_leaflet
 
