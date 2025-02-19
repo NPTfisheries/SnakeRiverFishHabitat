@@ -76,6 +76,26 @@ chnk_ip_sf = ip_sf %>%
   mutate(ip_class = factor(ip_class, levels = c("High", "Med", "Low"))) %>%
   select(ip_class)
 
+# prep sthd qrf
+sthd_qrf_sf = qrf_sf %>%
+  filter(sthd == TRUE,
+         sthd_use == "Spawning and rearing") %>%
+  mutate(redds_per_km = sthd_per_m * 1000) %>%
+  mutate(redds_bin = cut(redds_per_km, breaks = c(0, 2, 4, 6, 8, Inf), 
+                         labels = c("0-2", "2-4", "4-6", "6-8", "8+"), 
+                         right = FALSE)) %>%
+  select(redds_per_km, redds_bin)
+
+# prep chnk qrf
+chnk_qrf_sf = qrf_sf %>%
+  filter(chnk == TRUE,
+         chnk_use == "Spawning and rearing") %>%
+  mutate(redds_per_km = chnk_per_m * 1000) %>%
+  mutate(redds_bin = cut(redds_per_km, breaks = c(0, 2, 4, 6, 8, Inf), 
+                         labels = c("0-2", "2-4", "4-6", "6-8", "8+"), 
+                         right = FALSE)) %>%
+  select(redds_per_km, redds_bin)
+
 # -----------------------
 # set some colors
 sthd_mpg_col = colorFactor(palette = "Dark2", domain = sthd_pops$MPG)
@@ -85,6 +105,10 @@ chnk_spawn_col = colorFactor(palette = c("springgreen", "darkgreen"), domain = c
 ip_col = colorFactor(palette = c("#E3F2FD", "#64B5F6", "#0D47A1"), 
                      domain = sthd_ip_sf$ip_class,
                      levels = c("Low", "Med", "High"))
+#qrf_col = colorNumeric(palette = c("white", "red"), domain = c(min(sthd_qrf_sf$redds_per_km, chnk_qrf_sf$redds_per_km), max(sthd_qrf_sf$redds_per_km, chnk_qrf_sf$redds_per_km)))
+qrf_col = colorFactor(palette = c("white", "lightpink", "salmon", "firebrick", "darkred"),
+                      domain = sthd_ip_sf$ip_class,
+                      levels = c("0-2", "2-4", "4-6", "6-8", "8+"))
 
 # -----------------------
 # build leaflet
@@ -162,14 +186,41 @@ sr_hab_leaflet = base %>%
             values = factor(c("High", "Med", "Low"), levels = c("High", "Med", "Low")),
             title = "Intrinsic Potential",
             opacity = 1) %>%
+  # steelhead qrf redd capacity
+  addPolylines(data = sthd_qrf_sf,
+               group = "Steelhead QRF Redd Capacity",
+               color = ~qrf_col(redds_bin),
+               weight = 2,
+               opacity = 1) %>%
+  # chinook qrf redd capacity
+  addPolylines(data = chnk_qrf_sf,
+               group = "Sp/Sum Chinook QRF Redd Capacity",
+               color = ~qrf_col(redds_bin),
+               weight = 2,
+               opacity = 1) %>%
+  # qrf legend
+  addLegend(position = "bottomleft",
+            pal = qrf_col,
+            values = factor(c("8+", "6-8", "4-6", "2-4", "0-2"), levels = c("8+", "6-8", "4-6", "2-4", "0-2")),
+            title = "Capacity (redds/km)",
+            opacity = 1) %>%
+  # addLegend(position = "bottomleft",
+  #           pal = qrf_col,
+  #           values = c(min(sthd_qrf_sf$redds_per_km, chnk_qrf_sf$redds_per_km), max(sthd_qrf_sf$redds_per_km, chnk_qrf_sf$redds_per_km)),
+  #           title = "Redds per km",
+  #           opacity = 1) %>%
   addLayersControl(baseGroups = c("Steelhead Populations",
                                   "Steelhead Spawning Areas",
                                   "Sp/Sum Chinook Populations",
                                   "Sp/Sum Chinook Spawning Areas"),
                    overlayGroups = c("Steelhead IP",
-                                     "Sp/Sum Chinook IP"),
+                                     "Sp/Sum Chinook IP",
+                                     "Steelhead QRF Redd Capacity",
+                                     "Sp/Sum Chinook QRF Redd Capacity"),
                    options = layersControlOptions(collapsed = FALSE)) %>%
-  hideGroup("Sp/Sum Chinook IP")
+  hideGroup("Sp/Sum Chinook IP") %>%
+  hideGroup("Steelhead QRF Redd Capacity") %>%
+  hideGroup("Sp/Sum Chinook QRF Redd Capacity")
 
 sr_hab_leaflet
 
