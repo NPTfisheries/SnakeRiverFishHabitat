@@ -13,5 +13,5 @@ ui = fluidPage(
 server = function(input, output) {
 }
 
-# App 
+# App
 shinyApp(ui = ui, server = server)
