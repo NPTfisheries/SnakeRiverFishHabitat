@@ -3,7 +3,7 @@
 #   along with TRT population boundaries.
 # 
 # Created: February 14, 2025
-#   Last Modified: February 19, 2025
+#   Last Modified: February 21, 2025
 # 
 # Notes:
 #
@@ -96,6 +96,8 @@ chnk_qrf_sf = qrf_sf %>%
                          right = FALSE)) %>%
   select(redds_per_km, redds_bin)
 
+rm(ip_sf, qrf_sf)
+
 # -----------------------
 # set some colors
 sthd_mpg_col = colorFactor(palette = "Dark2", domain = sthd_pops$MPG)
@@ -111,12 +113,10 @@ qrf_col = colorFactor(palette = c("white", "lightpink", "salmon", "firebrick", "
 
 # -----------------------
 # build leaflet
-base = leaflet() %>%
+sr_hab_leaflet = leaflet() %>%
   # base map
   setView(lng = -116, lat = 45.35, zoom = 7.5) %>%
-  addProviderTiles(providers$Esri.WorldTopoMap)
-
-sr_hab_leaflet = base %>%
+  addProviderTiles(providers$Esri.WorldTopoMap) %>%
   # steelhead populations
   addPolygons(data = sthd_pops,
               group = "Steelhead Populations",
@@ -181,46 +181,48 @@ sr_hab_leaflet = base %>%
   addPolylines(data = sthd_ip_sf,
                group = "Steelhead IP",
                color = ~ip_col(ip_class),
-               weight = 2,
+               weight = 2.5,
                opacity = 1,
-               label = ~paste0("IP Class: ", ip_class)) %>%
+               popup = ~paste("<b>IP Class:</b>", ip_class)) %>%
   addLegend(position = "topleft",
             pal = ip_col,
             values = factor(c("High", "Med", "Low"), levels = c("High", "Med", "Low")),
             title = "Intrinsic Potential",
             opacity = 1,
             group = "Steelhead IP") %>%
-  # chinook intrinsic potential
-  addPolylines(data = chnk_ip_sf,
-               group = "Sp/Sum Chinook IP",
-               color = ~ip_col(ip_class),
-               weight = 2,
-               opacity = 1,
-               label = ~paste0("IP Class: ", ip_class)) %>%
-  addLegend(position = "topleft",
-            pal = ip_col,
-            values = factor(c("High", "Med", "Low"), levels = c("High", "Med", "Low")),
-            title = "Intrinsic Potential",
-            opacity = 1,
-            group = "Sp/Sum Chinook IP") %>%
   # steelhead qrf redd capacity
   addPolylines(data = sthd_qrf_sf,
                group = "Steelhead QRF Redd Capacity",
                color = ~qrf_col(redds_bin),
                weight = 2,
-               opacity = 1) %>%
+               opacity = 1,
+               popup = ~paste("<b>Redds/km Bin:</b>", redds_bin)) %>%
   addLegend(position = "topleft",
             pal = qrf_col,
             values = factor(c("8+", "6-8", "4-6", "2-4", "0-2"), levels = c("8+", "6-8", "4-6", "2-4", "0-2")),
             title = "Capacity (redds/km)",
             opacity = 1,
             group = "Steelhead QRF Redd Capacity") %>%
+  # chinook intrinsic potential
+  addPolylines(data = chnk_ip_sf,
+               group = "Sp/Sum Chinook IP",
+               color = ~ip_col(ip_class),
+               weight = 2.5,
+               opacity = 1,
+               popup = ~paste("<b>IP Class:</b>", ip_class)) %>%
+  addLegend(position = "topleft",
+            pal = ip_col,
+            values = factor(c("High", "Med", "Low"), levels = c("High", "Med", "Low")),
+            title = "Intrinsic Potential",
+            opacity = 1,
+            group = "Sp/Sum Chinook IP") %>%
   # chinook qrf redd capacity
   addPolylines(data = chnk_qrf_sf,
                group = "Sp/Sum Chinook QRF Redd Capacity",
                color = ~qrf_col(redds_bin),
                weight = 2,
-               opacity = 1) %>%
+               opacity = 1,
+               popup = ~paste("<b>Redds/km Bin:</b>", redds_bin)) %>%
   addLegend(position = "topleft",
             pal = qrf_col,
             values = factor(c("8+", "6-8", "4-6", "2-4", "0-2"), levels = c("8+", "6-8", "4-6", "2-4", "0-2")),
@@ -232,14 +234,13 @@ sr_hab_leaflet = base %>%
                                   "Sp/Sum Chinook Populations",
                                   "Sp/Sum Chinook Spawning Areas"),
                    overlayGroups = c("Steelhead IP",
-                                     "Sp/Sum Chinook IP",
                                      "Steelhead QRF Redd Capacity",
+                                     "Sp/Sum Chinook IP",
                                      "Sp/Sum Chinook QRF Redd Capacity"),
                    options = layersControlOptions(collapsed = FALSE, autoZIndex = TRUE)) %>%
-  hideGroup("Sp/Sum Chinook Populations") %>%
   # show "Steelhead IP" by default
-  hideGroup("Sp/Sum Chinook IP") %>%
   hideGroup("Steelhead QRF Redd Capacity") %>%
+  hideGroup("Sp/Sum Chinook IP") %>%
   hideGroup("Sp/Sum Chinook QRF Redd Capacity")
 
 sr_hab_leaflet
@@ -247,5 +248,4 @@ sr_hab_leaflet
 # save leaflet
 saveWidget(sr_hab_leaflet, file = here("shiny/leaflet/sr_available_habitat_leaflet.html"))
 
-### END SCRIPT  
-  
+### END SCRIPT

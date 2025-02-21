@@ -5,6 +5,6 @@ account: nptfisheries
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14004091
-bundleId: 9830991
+bundleId: 9835793
 url: https://nptfisheries.shinyapps.io/sr-avail-hab/
 version: 1
