@@ -1,2 +1,2 @@
-# SnakeRiverAvailHab
-A repo to view available habitat datasets along with TRT population boundaries for sp/sum Chinook salmon and steelhead in the Snake River basin.
+# SnakeRiverFishHabitat
+A repo for prep, analysis, and visualization of available habitat datasets (e.g., IP, QRF, FDAT) for spring/summer Chinook salmon and steelhead in the Snake River basin.
