@@ -3,7 +3,7 @@
 #   along with TRT population boundaries.
 # 
 # Created: February 14, 2025
-#   Last Modified: February 21, 2025
+#   Last Modified: July 23, 2025
 # 
 # Notes:
 #
@@ -40,9 +40,9 @@ chnk_spawn = readRDS(here("data/spatial/spsm_spwn_areas.rds")) %>%
   st_transform(default_crs)
 
 # prepped intrinsic potential and redd qrf datasets
-load(file = here("data/spatial/prepped_snake_ip.rda"))
+load(file = here("output/prepped_snake_ip.rda"))
 ip_sf %<>% st_transform(default_crs)
-qrf_sf = get(load(file = here("data/spatial/snake_redd_qrf.rda"))) %>% st_transform(default_crs)
+qrf_sf = get(load(file = here("output/prepped_snake_redd_qrf.rda"))) %>% st_transform(default_crs)
 
 # prep sthd ip
 sthd_ip_sf = ip_sf %>%
