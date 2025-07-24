@@ -3,7 +3,7 @@
 # Purpose: Read in the FDAT datasets from an external drive and save to .rda files.
 # 
 # Created: July 23, 2025
-#   Last Modified:
+#   Last Modified: July 24, 2025
 # 
 # Notes:
 
@@ -15,38 +15,26 @@ library(sf)
 library(here)
 library(magrittr)
 
-# path to fdat files
-chnk_path = "D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/"
-sthd_path = "D:/NAS/data/FDAT/FDAT_Phase2_Steelhead_FinalShapefiles&Metadata/Steelhead/"
+# define base paths to fdat files, by species
+paths <- list(chnk = "D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/",
+              sthd = "D:/NAS/data/FDAT/FDAT_Phase2_Steelhead_FinalShapefiles&Metadata/Steelhead/")
 
-#----------
-# Chinook
+# define shapefile names and object/output names
+files = list(obs_pts  = "ObservationPoints.shp",
+             pred_pts = "PredictionPoints_DensityResults.shp",
+             pred_ss  = "StreamSegmentScenarios_DensityResults.shp")
 
-# emipirical observation points
-fdat_chnk_obs_pts = st_read(paste0(chnk_path, "FDAT_Phase2_Chinook_ObservationPoints.shp"))
-save(fdat_chnk_obs_pts, file = here("output/fdat_chnk_obs_pts.rda"))
-
-# prediction points
-fdat_chnk_pred_pts = st_read(paste0(chnk_path, "FDAT_Phase2_Chinook_PredictionPoints_DensityResults.shp"))
-save(fdat_chnk_pred_pts, file = here("output/fdat_chnk_pred_pts.rda"))  
-
-# prediction stream segments
-fdat_chnk_pred_ss = st_read(paste0(chnk_path, "FDAT_Phase2_Chinook_StreamSegmentScenarios_DensityResults.shp"))
-save(fdat_chnk_pred_ss, file = here("output/fdat_chnk_pred_ss.rda"))  
-
-#----------
-# Steelhead
-
-# emipirical observation points
-fdat_sthd_obs_pts = st_read(paste0(sthd_path, "FDAT_Phase2_Steelhead_ObservationPoints.shp"))
-save(fdat_sthd_obs_pts, file = here("output/fdat_sthd_obs_pts.rda"))
-
-# prediction points
-fdat_sthd_pred_pts = st_read(paste0(sthd_path, "FDAT_Phase2_Steelhead_PredictionPoints_DensityResults.shp"))
-save(fdat_sthd_pred_pts, file = here("output/fdat_sthd_pred_pts.rda"))  
-
-# prediction stream segments
-fdat_sthd_pred_ss = st_read(paste0(sthd_path, "FDAT_Phase2_Steelhead_StreamSegmentScenarios_DensityResults.shp"))
-save(fdat_sthd_pred_ss, file = here("output/fdat_sthd_pred_ss.rda"))  
+# read and save each file
+for (spc in names(paths)) {
+  for (key in names(files)) {
+    shp_file = paste0("FDAT_Phase2_", ifelse(spc == "chnk", "Chinook", "Steelhead"), "_", files[[key]])
+    obj_name = paste0("fdat_", spc, "_", key)
+    file_path = file.path(paths[[spc]], shp_file)
+    assign(obj_name, st_read(file_path))
+    save(list = obj_name, file = here::here("output", paste0(obj_name, ".rda")))
+  }
+}
 
 ### END SCRIPT
+
+
