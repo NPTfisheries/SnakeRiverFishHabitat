@@ -36,5 +36,3 @@ for (spc in names(paths)) {
 }
 
 ### END SCRIPT
-
-
