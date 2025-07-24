@@ -15,11 +15,38 @@ library(sf)
 library(here)
 library(magrittr)
 
-fdat_chnk_obs_pts = "D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/FDAT_Phase2_Chinook_ObservationPoints.shp" %>%
-  st_read() %T>%
-  { save(., file = here("output/fdat_chnk_obs_pts.rda")) }
+# path to fdat files
+chnk_path = "D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/"
+sthd_path = "D:/NAS/data/FDAT/FDAT_Phase2_Steelhead_FinalShapefiles&Metadata/Steelhead/"
 
-load(here("output/fdat_chnk_obs_pts.rda"))
+#----------
+# Chinook
 
-fdat_chnk_obs_pts = st_read("D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/FDAT_Phase2_Chinook_ObservationPoints.shp") %>%
-  save(file = here("output/fdat_chnk_obs_pts.rda"))
+# emipirical observation points
+fdat_chnk_obs_pts = st_read(paste0(chnk_path, "FDAT_Phase2_Chinook_ObservationPoints.shp"))
+save(fdat_chnk_obs_pts, file = here("output/fdat_chnk_obs_pts.rda"))
+
+# prediction points
+fdat_chnk_pred_pts = st_read(paste0(chnk_path, "FDAT_Phase2_Chinook_PredictionPoints_DensityResults.shp"))
+save(fdat_chnk_pred_pts, file = here("output/fdat_chnk_pred_pts.rda"))  
+
+# prediction stream segments
+fdat_chnk_pred_ss = st_read(paste0(chnk_path, "FDAT_Phase2_Chinook_StreamSegmentScenarios_DensityResults.shp"))
+save(fdat_chnk_pred_ss, file = here("output/fdat_chnk_pred_ss.rda"))  
+
+#----------
+# Steelhead
+
+# emipirical observation points
+fdat_sthd_obs_pts = st_read(paste0(sthd_path, "FDAT_Phase2_Steelhead_ObservationPoints.shp"))
+save(fdat_sthd_obs_pts, file = here("output/fdat_sthd_obs_pts.rda"))
+
+# prediction points
+fdat_sthd_pred_pts = st_read(paste0(sthd_path, "FDAT_Phase2_Steelhead_PredictionPoints_DensityResults.shp"))
+save(fdat_sthd_pred_pts, file = here("output/fdat_sthd_pred_pts.rda"))  
+
+# prediction stream segments
+fdat_sthd_pred_ss = st_read(paste0(sthd_path, "FDAT_Phase2_Steelhead_StreamSegmentScenarios_DensityResults.shp"))
+save(fdat_sthd_pred_ss, file = here("output/fdat_sthd_pred_ss.rda"))  
+
+### END SCRIPT
