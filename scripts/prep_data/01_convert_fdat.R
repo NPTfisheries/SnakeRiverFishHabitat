@@ -16,8 +16,8 @@ library(here)
 library(magrittr)
 
 # define base paths to fdat files, by species
-paths <- list(chnk = "D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/",
-              sthd = "D:/NAS/data/FDAT/FDAT_Phase2_Steelhead_FinalShapefiles&Metadata/Steelhead/")
+paths = list(chnk = "D:/NAS/data/FDAT/FDAT_Phase2_Chinook_FinalShapefiles&Metadata/Chinook/",
+             sthd = "D:/NAS/data/FDAT/FDAT_Phase2_Steelhead_FinalShapefiles&Metadata/Steelhead/")
 
 # define shapefile names and object/output names
 files = list(obs_pts  = "ObservationPoints.shp",
@@ -31,7 +31,7 @@ for (spc in names(paths)) {
     obj_name = paste0("fdat_", spc, "_", key)
     file_path = file.path(paths[[spc]], shp_file)
     assign(obj_name, st_read(file_path))
-    save(list = obj_name, file = here::here("output", paste0(obj_name, ".rda")))
+    save(list = obj_name, file = here::here("data/spatial/FDAT/", paste0(obj_name, ".rda")))
   }
 }
 
