@@ -45,7 +45,7 @@ fdat_chnk_obs_pts %<>%
   
 # save to file
 save(fdat_chnk_obs_pts, file = here("output/prepped_fdat_chnk_obs_pts.rda"))
-#st_write(fdat_chnk_obs_pts, here("output/prepped_fdat_chnk_obs_pts.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(fdat_chnk_obs_pts, here("output/gpkg/prepped_fdat_chnk_obs_pts.gpkg"), layer = "prepped_ip", delete_dsn = T)
 
 # load chinook prediction points dataset
 load(here("data/spatial/FDAT/fdat_chnk_pred_pts.rda"))
@@ -63,7 +63,7 @@ fdat_chnk_pred_pts %<>%
 
 # save to file
 save(fdat_chnk_pred_pts, file = here("output/prepped_fdat_chnk_pred_pts.rda"))
-#st_write(fdat_chnk_pred_pts, here("output/prepped_fdat_chnk_pred_pts.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(fdat_chnk_pred_pts, here("output/gpkg/prepped_fdat_chnk_pred_pts.gpkg"), layer = "prepped_ip", delete_dsn = T)
 
 # load chinook prediction stream segments dataset
 load(here("data/spatial/FDAT/fdat_chnk_pred_ss.rda"))
@@ -77,7 +77,7 @@ fdat_chnk_pred_ss %<>%
 
 # save to file
 save(fdat_chnk_pred_ss, file = here("output/prepped_fdat_chnk_pred_ss.rda"))
-#st_write(fdat_chnk_pred_ss, here("output/prepped_fdat_chnk_pred_ss.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(fdat_chnk_pred_ss, here("output/gpkg/prepped_fdat_chnk_pred_ss.gpkg"), layer = "prepped_ip", delete_dsn = T)
 
 fdat_chnk_pred_ss %>%
   ggplot() +
