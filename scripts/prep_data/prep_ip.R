@@ -3,7 +3,7 @@
 # Purpose: Read and prep the intrinsic potential dataset for analysis.
 # 
 # Created: July 23, 2025
-#   Last Modified:
+#   Last Modified: August 6, 2025
 # 
 # Notes:
 
@@ -64,6 +64,6 @@ ip_sf = readRDS(here("data/spatial/IP/ip.rds")) %>%
 
 # save the prepped intrinsic potential layer
 save(ip_sf, file = here("output/prepped_snake_ip.rda"))
-#st_write(ip_sf, here("output/prepped_snake_ip.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(ip_sf, here("output/gpkg/prepped_snake_ip.gpkg"), layer = "prepped_ip", delete_dsn = T)
 
 ### END SCRIPT

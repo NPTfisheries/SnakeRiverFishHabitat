@@ -3,7 +3,7 @@
 # Purpose: Read and prep the quantile random forest - redd dataset for analysis.
 # 
 # Created: July 23, 2025
-#   Last Modified:
+#   Last Modified: August 6, 2025
 # 
 # Notes:
 
@@ -64,10 +64,8 @@ qrf_sf %<>%
     )
   )
 
-
-
 # save the prepped qrf dataset
 save(qrf_sf, file = here("output/prepped_snake_redd_qrf.rda"))
-#st_write(qrf_sf, here("output/prepped_snake_redd_qrf.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(qrf_sf, here("output/gpkg/prepped_snake_redd_qrf.gpkg"), layer = "prepped_ip", delete_dsn = T)
 
 ### END SCRIPT
