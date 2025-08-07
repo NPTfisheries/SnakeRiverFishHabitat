@@ -27,7 +27,6 @@ sthd_pops = sth_pop %>%
 
 # load original qrf dataset (consider switching to og qrf and programatically fixing sfsr, among other things)
 qrf_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
-#qrf_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds_sfsr_fixed.gpkg") %>%
   clean_names() %>%
   st_transform(default_crs) %>%
   select(unique_id,
