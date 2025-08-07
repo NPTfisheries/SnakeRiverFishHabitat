@@ -21,7 +21,7 @@ library(readxl)
 default_crs = st_crs(32611) # WGS 84, UTM zone 11N
 
 # ictrt population polygons
-load(here("data/spatial/SR_pops.rda")) ; rm(fall_pop, spsm_pop)
+load(here("data/spatial/SR_pops.rda")) ; rm(fall_pop)
 sthd_pops = sth_pop %>%
   st_transform(default_crs) ; rm(sth_pop)
 
