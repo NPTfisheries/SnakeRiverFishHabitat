@@ -16,6 +16,12 @@ library(tidyverse)
 library(sf)
 library(janitor)
 
+# install cdmsR and cuyem
+remotes::install_github("ryankinzer/cdmsR")
+library(cdmsR)
+remotes::install_github("ryankinzer/cuyem")
+library(cuyem)
+
 # idfg sp/sum chnk spatial redd data
 ifwis_chnk_redd_sf = read_csv(file = here("data/ifwis_redd_detail_export_20250807.csv"), show_col_types = F) %>%
   clean_names() %>%
@@ -43,5 +49,46 @@ ifwis_chnk_redd_sf = read_csv(file = here("data/ifwis_redd_detail_export_2025080
 
 # write to .gpkg
 st_write(ifwis_chnk_redd_sf, here("output/gpkg/ifwis_chnk_redd_export_20250807.gpkg"), layer = "redd_pts", delete_layer = T)
+
+# login to cdms
+pw = readLines("cdms_pw/ma_cdms_pw.txt")
+cdmsLogin(username = "mikea", api_key = pw) ; rm(pw)
+
+# get npt redd data from cdms
+cdms_redd_raw = cdmsR::get_ReddData()
+cdms_redd_df = cuyem::clean_reddData(cdms_redd_raw) %>%
+  # quick fixes to make columns match
+  select(-RowId) %>%
+  rename(Year = CalendarYear) %>%
+  mutate(SurveyDate = as.Date(SurveyDate))
+
+cdms_redd_neor_raw = cdmsR::get_ReddData_NEOR(GRSME_ONLY = F)
+cdms_redd_neor_df = cuyem::clean_reddData_NEOR(cdms_redd_neor_raw)
+
+# which columns are different from cdms datasets
+setdiff(names(cdms_redd_df), names(cdms_redd_neor_df))
+setdiff(names(cdms_redd_neor_df), names(cdms_redd_df))
+
+# now join cdms redd datasets, clean, and make spatial
+cdms_chnk_redd_sf = bind_rows(cdms_redd_df, cdms_redd_neor_df) %>%
+  clean_names() %>%
+  # just focus on sp/sum Chinook, for now
+  filter(esu_dps == "Snake River Spring/Summer-run Chinook Salmon ESU") %>%
+  select(species,
+         esu_dps,
+         mpg,
+         trt_popid,
+         stream_name,
+         location_label,
+         survey_year,
+         survey_date,
+         survey_method,
+         latitude,
+         longitude) %>%
+  filter(!(is.na(latitude) | latitude == "" | is.na(longitude) | longitude == "")) %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) 
+
+# write to .gpkg
+st_write(cdms_chnk_redd_sf, here("output/gpkg/cdms_chnk_redd_export_20250807.gpkg"), layer = "redd_pts", delete_layer = T)
 
 ### END SCRIPT
