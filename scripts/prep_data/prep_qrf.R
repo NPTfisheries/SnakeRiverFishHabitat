@@ -15,6 +15,7 @@ library(tidyverse)
 library(janitor)
 library(sf)
 library(here)
+library(readxl)
 
 # set default crs
 default_crs = st_crs(32611) # WGS 84, UTM zone 11N
@@ -47,7 +48,10 @@ qrf_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_re
                     st_union() %>%
                     nngeo::st_remove_holes())
 
-# additional cleaning and prep
+# additional updates to species extents and use based on disparate datasets, expert opinion, etc.
+extent_use_updates = read_excel(path = here("data/qrf_spatial_extents_updates.xlsx"))
+
+# remaining cleaning and prep
 qrf_sf %<>%
   # if chnk or sthd is FALSE (0), change use to NA
   mutate(chnk_use = if_else(chnk == 0, NA_character_, chnk_use),
@@ -62,7 +66,16 @@ qrf_sf %<>%
       sthd == 1 & is.na(sthd_use) ~ "Restored, unknown use",
       TRUE ~ sthd_use
     )
-  )
+  ) %>%
+  # update species extents and uses for records in extent_use_updates
+  left_join(extent_use_updates, by = c("unique_id", "gnis_name")) %>%
+  mutate(
+    chnk = coalesce(chnk_update, chnk),
+    chnk_use = coalesce(chnk_use_update, chnk_use),
+    sthd = coalesce(sthd_update, sthd),
+    sthd_use = coalesce(sthd_use_update, sthd_use)
+  ) %>%
+  select(-ends_with("_update"), notes)
 
 # save the prepped qrf dataset
 save(qrf_sf, file = here("output/prepped_snake_redd_qrf.rda"))
