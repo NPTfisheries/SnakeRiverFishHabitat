@@ -51,8 +51,9 @@ diffs_chnk = qrf_sf %>%
   ) %>%
   filter(chnk_og != chnk_update | chnk_use_og != chnk_use_update) %>%
   select(-chnk_og, -chnk_use_og) %>%
-  mutate(sthd_update = "NA",
-         sthd_use_update = "NA")
+  mutate(sthd_update = NA,
+         sthd_use_update = NA, 
+         notes = "updated by Mike Ackerman on December 6, 2024 based on conversations with Travis Hodsdon")
 
 # write out to a .xlsx file for further editing
 write_xlsx(diffs_chnk,
