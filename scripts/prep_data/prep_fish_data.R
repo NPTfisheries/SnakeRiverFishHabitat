@@ -91,4 +91,36 @@ cdms_chnk_redd_sf = bind_rows(cdms_redd_df, cdms_redd_neor_df) %>%
 # write to .gpkg
 st_write(cdms_chnk_redd_sf, here("output/gpkg/cdms_chnk_redd_export_20250807.gpkg"), layer = "redd_pts", delete_layer = T)
 
+# idfg sp/sum chnk and steelhead juvenile fish survey data
+ifwis_juv_sf = read_csv(file = here("data/ifwis_juv_chnk_sthd_survey_export_20250812.csv"), show_col_types = F) %>%
+  clean_names() %>%
+  filter(!is.na(new_lat) & !is.na(new_long)) %>%
+  select(stream,
+         year,
+         survey_date,
+         fish_pres_desc,
+         pname,
+         agency,
+         program,
+         method,
+         s_name,
+         sci_name,
+         length_group,
+         sum_number_counted,
+         age_class,
+         new_lat,
+         new_long) %>%
+  # create a spc_code column for easy filtering
+  mutate(spc_code = case_when(
+    str_detect(s_name, "Chinook") ~ "chnk",
+    str_detect(s_name, "Steelhead") ~ "sthd",
+    TRUE ~ NA
+  )) %>%
+  st_as_sf(coords = c("new_long", "new_lat"), crs = 4326)
+
+# just export one species at a time using spc_code
+ifwis_juv_sf %>%
+  filter(spc_code == "chnk") %>%
+  st_write(here("output/gpkg/ifwis_juv_chnk_export_20250812.gpkg"), layer = "obs_pts", delete_layer = T)
+
 ### END SCRIPT
