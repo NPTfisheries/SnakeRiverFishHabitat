@@ -3,7 +3,7 @@
 # Purpose: Read and prep the quantile random forest - redd dataset for analysis.
 # 
 # Created: July 23, 2025
-#   Last Modified: August 7, 2025
+#   Last Modified: September 18, 2025
 # 
 # Notes:
 
@@ -26,7 +26,7 @@ sthd_pops = sth_pop %>%
   st_transform(default_crs) ; rm(sth_pop)
 
 # load original qrf redd dataset
-qrf_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
+qrf_redd_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
   clean_names() %>%
   st_transform(default_crs) %>%
   select(unique_id,
@@ -51,7 +51,7 @@ qrf_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_re
 extent_use_updates = read_excel(path = here("data/qrf_spatial_extents_updates.xlsx"))
 
 # remaining cleaning and prep
-qrf_sf %<>%
+qrf_redd_sf %<>%
   # if chnk or sthd is FALSE (0), change use to NA
   mutate(chnk_use = if_else(chnk == 0, NA_character_, chnk_use),
          sthd_use = if_else(sthd == 0, NA_character_, sthd_use)) %>%
@@ -77,7 +77,7 @@ qrf_sf %<>%
   select(-ends_with("_update"), notes)
 
 # save the prepped qrf dataset
-save(qrf_sf, file = here("output/prepped_snake_redd_qrf.rda"))
-#st_write(qrf_sf, here("output/gpkg/prepped_snake_redd_qrf.gpkg"), layer = "prepped_ip", delete_dsn = T)
+save(qrf_redd_sf, file = here("output/prepped_snake_redd_qrf.rda"))
+#st_write(qrf_redd_sf, here("output/gpkg/prepped_snake_redd_qrf.gpkg"), layer = "redd_qrf", delete_dsn = T)
 
 ### END SCRIPT
