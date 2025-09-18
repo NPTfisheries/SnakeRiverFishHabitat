@@ -51,6 +51,6 @@ qrf_juv_sum_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No
 
 # save the prepped qrf dataset
 save(qrf_juv_sum_sf, file = here("output/prepped_snake_juv_sum_qrf.rda"))
-st_write(qrf_juv_sum_sf, here("output/gpkg/prepped_snake_juv_sum_qrf.gpkg"), layer = "juv_sum_qrf", delete_dsn = T)
+#st_write(qrf_juv_sum_sf, here("output/gpkg/prepped_snake_juv_sum_qrf.gpkg"), layer = "juv_sum_qrf", delete_dsn = T)
 
 ### END SCRIPT
