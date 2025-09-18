@@ -1,0 +1,130 @@
+---
+title: "Zena Creek Steelhead Habitat Potential"
+author: Mike Ackerman
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  bookdown::html_document2:
+    theme: yeti
+---
+
+```{r setup, echo = F}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE,
+  comment = "#>",
+  fig.path = "../output/figures/",
+  #dev = c("pdf", "png"),
+  dpi = 600
+)
+
+# replace NA w/ "-" in tables
+options(knitr.kable.NA = "-")
+
+```
+
+```{r load-libraries}
+# for formatting
+library(kableExtra)
+
+# for analysis
+library(tidyverse)
+library(sf)
+library(ggspatial)
+library(here)
+library(janitor)
+library(scales)
+
+```
+
+```{r load-data}
+# load qrf datasets
+load(here("output/prepped_snake_juv_sum_qrf.rda")) # prepped juvenile summer rearing (untrimmed to chnk & sthd extents)
+qrf_redd_sf = get(load(here("output/prepped_snake_redd_qrf_untrimmed.rda"))) ; rm(qrf_sf) # prepped redd dataset (untrimmed to chnk & sthd extents)
+
+```
+
+```{r stream-segments}
+# zena stream segments below impoundment dam
+blw_ss = c(1083665, 1084335, 1097061, 1126937)
+
+# zena stream segments opened to impoundment dam
+abv_ss = c(997571, 1024185, 1039026, 1043936, 1048022, 1051588, 1051904, 1058839, 1060105, 1068759, 1070992, 1074093, 1076449, 1079437,
+           1079546, 1093549, 1095914, 1101227, 1102813, 1103590, 1103840, 1104014, 1109010, 1110163, 1113965, 1114957, 1115362, 1118244, 1119930,
+           1123030, 1124842, 1124897, 1129214, 1016572, 1069818, 1078288)
+
+```
+
+```{r analysis}
+# trim qrf datasets to stream segments in blw_ss & abv_ss
+zena_qrf_sf = qrf_redd_sf %>%
+  mutate(model = "redd") %>%
+  bind_rows(qrf_juv_sum_sf %>%
+              mutate(model = "juv_sum")) %>%
+  filter(unique_id %in% c(blw_ss, abv_ss)) %>%
+  mutate(status = case_when(
+    unique_id %in% blw_ss ~ "current",
+    unique_id %in% abv_ss ~ "potential",
+    TRUE ~ NA_character_
+  ))
+
+# summarize capacity below impoundment and potential new habitat
+zena_df = zena_qrf_sf %>%
+  st_drop_geometry() %>%
+  group_by(model, status) %>%
+  summarize(length_m = sum(reach_leng_m),
+            capacity = sum(sthd_per_m * reach_leng_m),
+            capacity_per_km = capacity / (length_m / 1000),
+            .groups = "drop")
+
+```
+
+Currently, available spawning habitat for steelhead appears to be a limiting factor for production in Zena Creek. Adults are limited to spawning within the lower approximately `r zena_df$length_m[zena_df$status == "current" & zena_df$model == "redd"]` meters below the impoundment which is estimated to support only `r round(zena_df$capacity[zena_df$status == "current" & zena_df$model == "redd"], 0)` steelhead redds (Table \@ref(tab:table)). Removing the current barrier would provide an additional `r round(zena_df$length_m[zena_df$status == "potential" & zena_df$model == "redd"],0)` meters of accessible spawning habitat supporting a potential of `r round(zena_df$capacity[zena_df$status == "potential" & zena_df$model == "redd"], 0)` additional redds (Table \@ref(tab:table)). Further, we estimate that the additional accessible habitat would provide a greater than 6-fold increase in available rearing habitat for steelhead fry and parr. Our evaluation of habitat capacity in Zena Creek uses results from the quantile random forest models described by See et al. (2021).
+
+
+```{r table}
+zena_tbl = zena_df %>%
+  clean_names("title") %>%
+  select(Status,
+         Model,
+         `Stream Length (m)` = `Length m`,
+         Capacity) %>%
+  mutate(across(where(is.numeric),
+                ~ comma(round(.x, 0)))) %>%
+  kable(booktabs = T,
+        align = "c",
+        label = NA,
+        caption = "Estimated habitat capacity for the current extent of available habitat to steelhead and potential accessible and suitable habitat if the impoundment were to be removed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+zena_tbl
+
+```
+
+```{r map, fig.align='center', out.width="100%", fig.cap = "Map of Zena Creek showing the current extent of available habitat to steelhead and potential accessible and suitable habitat if the impoundment were to be removed."}
+# simple map
+zena_p = zena_qrf_sf %>%
+  ggplot() +
+  annotation_map_tile(type = "osm", zoomin = 0) +
+  geom_sf(aes(color = status), linewidth = 1) +
+  # map scale
+  annotation_scale(location = "br",
+                   width_hint = 0.4) +
+  # north arrow
+  annotation_north_arrow(location = "br",
+                         which_north = "true",
+                         pad_x = unit(0, "in"),
+                         pad_y = unit(0.35, "in"),
+                         style = north_arrow_fancy_orienteering) +
+  labs(color = "Status") +
+  theme_minimal() +
+  theme(axis.text = element_blank())
+zena_p
+
+```
+
+### Literature Cited
+
+See, K.E., M.W. Ackerman, R.A. Carmichael, S.L. Hoffmann, and C. Beasley. 2021. Estimating carrying capacity for juvenile salmon using quantile random forest models. Ecosphere 12(3):e03404. 10.1002/ecs2.3404
