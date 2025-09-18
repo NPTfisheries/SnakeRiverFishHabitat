@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   echo = FALSE,
   comment = "#>",
-  fig.path = "../output/figures/",
+  #fig.path = "../output/figures/",
   #dev = c("pdf", "png"),
   dpi = 600
 )
