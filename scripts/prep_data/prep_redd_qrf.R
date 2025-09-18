@@ -25,7 +25,7 @@ load(here("data/spatial/SR_pops.rda")) ; rm(fall_pop)
 sthd_pops = sth_pop %>%
   st_transform(default_crs) ; rm(sth_pop)
 
-# load original qrf dataset (consider switching to og qrf and programatically fixing sfsr, among other things)
+# load original qrf redd dataset
 qrf_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
   clean_names() %>%
   st_transform(default_crs) %>%
