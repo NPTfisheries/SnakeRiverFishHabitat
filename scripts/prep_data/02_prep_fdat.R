@@ -3,7 +3,7 @@
 # Purpose: Read and prep the Fish Data Analysis Tool (FDAT) dataset for analysis.
 # 
 # Created: July 24, 2025
-#   Last Modified:
+#   Last Modified: March 4, 2026
 # 
 # Notes:
 
@@ -12,6 +12,7 @@ rm(list = ls())
 
 # load packages
 library(tidyverse)
+library(magrittr)
 library(janitor)
 library(sf)
 library(here)
@@ -45,7 +46,30 @@ fdat_chnk_obs_pts %<>%
   
 # save to file
 save(fdat_chnk_obs_pts, file = here("output/prepped_fdat_chnk_obs_pts.rda"))
-#st_write(fdat_chnk_obs_pts, here("output/gpkg/prepped_fdat_chnk_obs_pts.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(fdat_chnk_obs_pts, here("output/gpkg/prepped_fdat_chnk_obs_pts.gpkg"), layer = "fdat_chnk_obs", delete_dsn = T)
+
+# load steelhead observation points dataset
+load(here("data/spatial/FDAT/fdat_sthd_obs_pts.rda")) 
+fdat_sthd_obs_pts %<>%
+  clean_names() %>%
+  st_transform(default_crs) %>%
+  select(gnis_name,
+         site_id,
+         year,
+         om_density,
+         comid,
+         source,
+         sh_pop,
+         point_x,
+         point_y) %>%
+  # trim to snake river basin (includes some pts in John Day River)
+  st_intersection(sthd_pops %>%
+                    st_union() %>%
+                    nngeo::st_remove_holes())
+
+# save to file
+save(fdat_sthd_obs_pts, file = here("output/prepped_fdat_sthd_obs_pts.rda"))
+#st_write(fdat_sthd_obs_pts, here("output/gpkg/prepped_fdat_sthd_obs_pts.gpkg"), layer = "fdat_sthd_obs", delete_dsn = T)
 
 # load chinook prediction points dataset
 load(here("data/spatial/FDAT/fdat_chnk_pred_pts.rda"))
@@ -63,7 +87,7 @@ fdat_chnk_pred_pts %<>%
 
 # save to file
 save(fdat_chnk_pred_pts, file = here("output/prepped_fdat_chnk_pred_pts.rda"))
-#st_write(fdat_chnk_pred_pts, here("output/gpkg/prepped_fdat_chnk_pred_pts.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(fdat_chnk_pred_pts, here("output/gpkg/prepped_fdat_chnk_pred_pts.gpkg"), layer = "fdat_chnk_pred_pts", delete_dsn = T)
 
 # load chinook prediction stream segments dataset
 load(here("data/spatial/FDAT/fdat_chnk_pred_ss.rda"))
@@ -77,7 +101,7 @@ fdat_chnk_pred_ss %<>%
 
 # save to file
 save(fdat_chnk_pred_ss, file = here("output/prepped_fdat_chnk_pred_ss.rda"))
-#st_write(fdat_chnk_pred_ss, here("output/gpkg/prepped_fdat_chnk_pred_ss.gpkg"), layer = "prepped_ip", delete_dsn = T)
+#st_write(fdat_chnk_pred_ss, here("output/gpkg/prepped_fdat_chnk_pred_ss.gpkg"), layer = "fdat_chnk_pred_ss", delete_dsn = T)
 
 fdat_chnk_pred_ss %>%
   ggplot() +

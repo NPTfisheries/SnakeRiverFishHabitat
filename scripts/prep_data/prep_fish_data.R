@@ -3,7 +3,7 @@
 # Purpose: Prep various raw fish (e.g., redd survey) datasets for further use.
 # 
 # Created: August 7, 2025
-#   Last Modified: 
+#   Last Modified: March 4, 2026
 # 
 # Notes:
 
@@ -118,9 +118,13 @@ ifwis_juv_sf = read_csv(file = here("data/ifwis_juv_chnk_sthd_survey_export_2025
   )) %>%
   st_as_sf(coords = c("new_long", "new_lat"), crs = 4326)
 
-# just export one species at a time using spc_code
+# export one species at a time using spc_code
 ifwis_juv_sf %>%
   filter(spc_code == "chnk") %>%
   st_write(here("output/gpkg/ifwis_juv_chnk_export_20250812.gpkg"), layer = "obs_pts", delete_layer = T)
+
+ifwis_juv_sf %>%
+  filter(spc_code == "sthd") %>%
+  st_write(here("output/gpkg/ifwis_juv_sthd_export_20250812.gpkg"), layer = "obs_pts", delete_layer = T)
 
 ### END SCRIPT
