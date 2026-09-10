@@ -25,27 +25,60 @@ load(here("data/spatial/SR_pops.rda")) ; rm(fall_pop)
 sthd_pops = sth_pop %>%
   st_transform(default_crs) ; rm(sth_pop)
 
-# load original qrf redd dataset
-qrf_redd_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
+# load & prep original qrf redd dataset
+load("C:/Git/QRFcapacity/output/modelFits/extrap_200rch_RF_redds.rda")
+load("C:/Git/QRFcapacity/data/rch_200.rda")
+qrf_redd_sf = rch_200 %>%
+  select(
+    UniqueID,
+    GNIS_Name,
+    reach_leng_m = reach_leng,
+    chnk,
+    chnk_use,
+    sthd,
+    sthd_use
+  ) %>%
+  left_join(
+    all_preds %>%
+      select(
+        UniqueID,
+        chnk_per_m,
+        chnk_per_m_se,
+        sthd_per_m,
+        sthd_per_m_se
+      ),
+    by = "UniqueID"
+  ) %>%
+  filter(reach_leng_m < 500) %>%
   clean_names() %>%
   st_transform(default_crs) %>%
-  select(unique_id,
-         gnis_name,
-         reach_leng_m = reach_leng,
-         chnk,
-         chnk_use,
-         sthd,
-         sthd_use,
-         chnk_per_m,
-         chnk_per_m_se,
-         sthd_per_m,
-         sthd_per_m_se) %>%
   # trim to only reaches used by either sp/sum chinook or steelhead (according to StreamNet)
   filter(chnk == TRUE | sthd == TRUE) %>%
   # trim to extent of snake river steelhead populations
   st_intersection(sthd_pops %>%
                     st_union() %>%
                     nngeo::st_remove_holes())
+
+# qrf_redd_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
+#   clean_names() %>%
+#   st_transform(default_crs) %>%
+#   select(unique_id,
+#          gnis_name,
+#          reach_leng_m = reach_leng,
+#          chnk,
+#          chnk_use,
+#          sthd,
+#          sthd_use,
+#          chnk_per_m,
+#          chnk_per_m_se,
+#          sthd_per_m,
+#          sthd_per_m_se) %>%
+#   # trim to only reaches used by either sp/sum chinook or steelhead (according to StreamNet)
+#   filter(chnk == TRUE | sthd == TRUE) %>%
+#   # trim to extent of snake river steelhead populations
+#   st_intersection(sthd_pops %>%
+#                     st_union() %>%
+#                     nngeo::st_remove_holes())
 
 # additional updates to species extents and use based on disparate datasets, expert opinion, etc.
 extent_use_updates = read_excel(path = here("data/qrf_spatial_extents_updates.xlsx"))
@@ -69,9 +102,9 @@ qrf_redd_sf %<>%
   # update species extents and uses for records in extent_use_updates
   left_join(extent_use_updates, by = c("unique_id", "gnis_name")) %>%
   mutate(
-    chnk = coalesce(chnk_update, chnk),
+    chnk     = coalesce(chnk_update, chnk),
     chnk_use = coalesce(chnk_use_update, chnk_use),
-    sthd = coalesce(sthd_update, sthd),
+    sthd     = coalesce(sthd_update, sthd),
     sthd_use = coalesce(sthd_use_update, sthd_use)
   ) %>%
   select(-ends_with("_update"), notes)
