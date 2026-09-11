@@ -3,7 +3,7 @@
 # Purpose: Read and prep the quantile random forest - redd dataset for analysis.
 # 
 # Created: July 23, 2025
-#   Last Modified: March 4, 2026
+#   Last Modified: September 10, 2026
 # 
 # Notes:
 
@@ -25,7 +25,7 @@ load(here("data/spatial/SR_pops.rda")) ; rm(fall_pop)
 sthd_pops = sth_pop %>%
   st_transform(default_crs) ; rm(sth_pop)
 
-# load & prep original qrf redd dataset
+# load & prep most up-to-date qrf redd dataset from QRFcapacity
 load("C:/Git/QRFcapacity/output/modelFits/extrap_200rch_RF_redds.rda")
 load("C:/Git/QRFcapacity/data/rch_200.rda")
 qrf_redd_sf = rch_200 %>%
@@ -59,6 +59,7 @@ qrf_redd_sf = rch_200 %>%
                     st_union() %>%
                     nngeo::st_remove_holes())
 
+# PREVIOUS: read qrf redd outputs from external hard drive
 # qrf_redd_sf = st_read("D:/NAS/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg") %>%
 #   clean_names() %>%
 #   st_transform(default_crs) %>%
